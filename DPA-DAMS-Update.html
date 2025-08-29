@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRTC Attendance System - Diploma in Public Administration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            overflow-x: auto;
+            padding: 0 20px;
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tab.active {
+            color: #2c3e50;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .nav-tab:hover {
+            color: #2c3e50;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .group-view {
+            display: none;
+        }
+
+        .group-view.active {
+            display: block;
+        }
+
+        .group-header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .student-card {
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+
+        .student-card.present {
+            border-color: #28a745;
+            background: linear-gradient(45deg, #d4edda, #f8fff9);
+        }
+
+        .student-card.absent {
+            border-color: #dc3545;
+            background: linear-gradient(45deg, #f8d7da, #fff5f5);
+        }
+
+        .student-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .attendance-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-present {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-present:hover {
+            background: #218838;
+        }
+
+        .btn-absent {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-absent:hover {
+            background: #c82333;
+        }
+
+        .btn-clock-out {
+            background: #fd7e14;
+            color: white;
+        }
+
+        .btn-clock-out:hover {
+            background: #e8690b;
+        }
+
+        .time-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .time-info strong {
+            color: #2c3e50;
+        }
+
+        .stats {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .export-btn {
+            background: #17a2b8;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            background: #138496;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .nav-tabs {
+                padding: 0 10px;
+            }
+
+            .nav-tab {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .student-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ Digital Attendance System</h1>
+            <p>Diploma in Public Administration - IRTC Somare Institute of Leadership and Governance</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showView('whole-class')">Whole Class</button>
+            <button class="nav-tab" onclick="showView('honesty')">Group Honesty</button>
+            <button class="nav-tab" onclick="showView('integrity')">Group Integrity</button>
+            <button class="nav-tab" onclick="showView('wisdom')">Group Wisdom</button>
+            <button class="nav-tab" onclick="showView('transparency')">Group Transparency</button>
+            <button class="nav-tab" onclick="showView('respect')">Group Respect</button>
+            <button class="nav-tab" onclick="showView('accountability')">Group Accountability</button>
+        </div>
+
+        <div class="content">
+            <!-- Whole Class View -->
+            <div id="whole-class" class="group-view active">
+                <div class="stats">
+                    <h2>📊 Class Overview</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-students">32</div>
+                            <div class="stat-label">Total Students</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="present-count">0</div>
+                            <div class="stat-label">Present</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="absent-count">32</div>
+                            <div class="stat-label">Absent</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="attendance-rate">0%</div>
+                            <div class="stat-label">Attendance Rate</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="export-btn" onclick="exportAttendance()">📊 Export Attendance Report</button>
+
+                <div class="student-grid" id="all-students">
+                    <!-- All students will be populated here -->
+                </div>
+            </div>
+
+            <!-- Individual Group Views -->
+            <div id="honesty" class="group-view">
+                <div class="group-header">
+                    <h2>🤝 Group Honesty</h2>
+                </div>
+                <div class="student-grid" id="honesty-students"></div>
+            </div>
+
+            <div id="integrity" class="group-view">
+                <div class="group-header">
+                    <h2>⚖️ Group Integrity</h2>
+                </div>
+                <div class="student-grid" id="integrity-students"></div>
+            </div>
+
+            <div id="wisdom" class="group-view">
+                <div class="group-header">
+                    <h2>🧠 Group Wisdom</h2>
+                </div>
+                <div class="student-grid" id="wisdom-students"></div>
+            </div>
+
+            <div id="transparency" class="group-view">
+                <div class="group-header">
+                    <h2>🔍 Group Transparency</h2>
+                </div>
+                <div class="student-grid" id="transparency-students"></div>
+            </div>
+
+            <div id="respect" class="group-view">
+                <div class="group-header">
+                    <h2>🤲 Group Respect</h2>
+                </div>
+                <div class="student-grid" id="respect-students"></div>
+            </div>
+
+            <div id="accountability" class="group-view">
+                <div class="group-header">
+                    <h2>📋 Group Accountability</h2>
+                </div>
+                <div class="student-grid" id="accountability-students"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Student data organized by groups
+        const students = {
+            honesty: [
+                "Lawrence Mararang",
+                "Lesley Elias", 
+                "Daniella Bata",
+                "Lomot Pomat",
+                "Joseph Maidang",
+                "Rachel Sailas"
+            ],
+            integrity: [
+                "Regina Illai",
+                "Adrian Palo",
+                "Relvie Kolias", 
+                "Samuel Wawa",
+                "Judith Vunuvung",
+                "Paul Toduk"
+            ],
+            wisdom: [
+                "Chris Patu",
+                "Bernard Mabubu",
+                "Gervina Langlagur",
+                "Graham Tommy",
+                "Rayndolyn Namues"
+            ],
+            transparency: [
+                "George Masiu",
+                "Penias Umong",
+                "Elsie David",
+                "Henrica Matlaun",
+                "Petra Michael",
+                "Lesley Waninara"
+            ],
+            respect: [
+                "Martin Linge",
+                "Patricia Minong", 
+                "Julius Malawau",
+                "Amanda Manaseh",
+                "Sanian kue"
+            ],
+            accountability: [
+                "Paul Tilau",
+                "Florence Bokoni",
+                "Mark Agave",
+                "Arnolda Murunata", 
+                "Helen Pamuan",
+                "Stacy Chan"
+            ]
+        };
+
+        // Attendance tracking
+        let attendance = {};
+        let clockTimes = {};
+
+        // Initialize attendance data
+        function initializeAttendance() {
+            Object.values(students).flat().forEach(student => {
+                attendance[student] = null; // null = not marked, true = present, false = absent
+                clockTimes[student] = { clockIn: null, clockOut: null };
+            });
+        }
+
+        // Create student card HTML
+        function createStudentCard(name, group = null) {
+            const isPresent = attendance[name];
+            const times = clockTimes[name];
+            const cardClass = isPresent === true ? 'present' : isPresent === false ? 'absent' : '';
+            
+            return `
+                <div class="student-card ${cardClass}" id="card-${name.replace(/\s+/g, '-')}">
+                    <div class="student-name">${name}</div>
+                    ${group ? `<div style="color: #6c757d; font-size: 0.9rem; margin-bottom: 10px;">Group ${group.charAt(0).toUpperCase() + group.slice(1)}</div>` : ''}
+                    <div class="attendance-controls">
+                        <button class="btn btn-present" onclick="markAttendance('${name}', true)">
+                            Clock In
+                        </button>
+                        <button class="btn btn-absent" onclick="markAttendance('${name}', false)">
+                            Mark Absent
+                        </button>
+                        ${isPresent === true && !times.clockOut ? 
+                            `<button class="btn btn-clock-out" onclick="clockOut('${name}')">Clock Out</button>` : ''
+                        }
+                    </div>
+                    ${times.clockIn || times.clockOut ? `
+                        <div class="time-info">
+                            ${times.clockIn ? `
+                                <div style="margin-bottom: 5px;">
+                                    <strong>Clock In:</strong> ${times.clockIn.split(' ').pop()}
+                                    <button onclick="editTime('${name}', 'in')" style="margin-left: 10px; padding: 2px 6px; font-size: 0.8rem; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer;">✏️ Edit</button>
+                                </div>
+                            ` : ''}
+                            ${times.clockOut ? `
+                                <div>
+                                    <strong>Clock Out:</strong> ${times.clockOut.split(' ').pop()}
+                                    <button onclick="editTime('${name}', 'out')" style="margin-left: 10px; padding: 2px 6px; font-size: 0.8rem; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer;">✏️ Edit</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Mark attendance
+        function markAttendance(name, isPresent) {
+            attendance[name] = isPresent;
+            
+            if (isPresent) {
+                // Prompt for clock-in time
+                const currentTime = new Date().toTimeString().slice(0, 5);
+                const clockInTime = prompt(`Enter clock-in time for ${name} (HH:MM format):`, currentTime);
+                
+                if (clockInTime && isValidTime(clockInTime)) {
+                    clockTimes[name].clockIn = formatDateTime(clockInTime);
+                    clockTimes[name].clockOut = null; // Reset clock out when clocking in
+                } else if (clockInTime !== null) {
+                    alert('Invalid time format. Please use HH:MM (24-hour format)');
+                    return;
+                }
+            } else {
+                clockTimes[name].clockIn = null;
+                clockTimes[name].clockOut = null;
+            }
+            
+            updateDisplay();
+        }
+
+        // Clock out function
+        function clockOut(name) {
+            if (attendance[name] === true) {
+                const currentTime = new Date().toTimeString().slice(0, 5);
+                const clockOutTime = prompt(`Enter clock-out time for ${name} (HH:MM format):`, currentTime);
+                
+                if (clockOutTime && isValidTime(clockOutTime)) {
+                    clockTimes[name].clockOut = formatDateTime(clockOutTime);
+                    updateDisplay();
+                } else if (clockOutTime !== null) {
+                    alert('Invalid time format. Please use HH:MM (24-hour format)');
+                }
+            }
+        }
+
+        // Validate time format (HH:MM)
+        function isValidTime(time) {
+            const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+            return timeRegex.test(time);
+        }
+
+        // Format time with current date
+        function formatDateTime(timeString) {
+            const today = new Date().toDateString();
+            return `${today} ${timeString}`;
+        }
+
+        // Edit time function
+        function editTime(name, type) {
+            const currentValue = type === 'in' ? clockTimes[name].clockIn : clockTimes[name].clockOut;
+            let currentTime = '';
+            
+            if (currentValue) {
+                // Extract time from the stored datetime string
+                currentTime = currentValue.split(' ').pop();
+            } else {
+                currentTime = new Date().toTimeString().slice(0, 5);
+            }
+            
+            const newTime = prompt(`Edit ${type === 'in' ? 'clock-in' : 'clock-out'} time for ${name} (HH:MM format):`, currentTime);
+            
+            if (newTime && isValidTime(newTime)) {
+                if (type === 'in') {
+                    clockTimes[name].clockIn = formatDateTime(newTime);
+                } else {
+                    clockTimes[name].clockOut = formatDateTime(newTime);
+                }
+                updateDisplay();
+            } else if (newTime !== null) {
+                alert('Invalid time format. Please use HH:MM (24-hour format)');
+            }
+        }
+
+        // Update all displays
+        function updateDisplay() {
+            // Update individual group views
+            Object.keys(students).forEach(group => {
+                const container = document.getElementById(`${group}-students`);
+                container.innerHTML = students[group].map(name => createStudentCard(name)).join('');
+            });
+
+            // Update whole class view
+            const allStudentsContainer = document.getElementById('all-students');
+            const allStudentsHTML = Object.keys(students).map(group => 
+                students[group].map(name => createStudentCard(name, group))
+            ).flat().join('');
+            allStudentsContainer.innerHTML = allStudentsHTML;
+
+            // Update statistics
+            updateStats();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalStudents = Object.values(students).flat().length;
+            const presentCount = Object.values(attendance).filter(status => status === true).length;
+            const absentCount = Object.values(attendance).filter(status => status === false).length;
+            const attendanceRate = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
+
+            document.getElementById('present-count').textContent = presentCount;
+            document.getElementById('absent-count').textContent = absentCount;
+            document.getElementById('attendance-rate').textContent = attendanceRate + '%';
+        }
+
+        // Show different views
+        function showView(viewName) {
+            // Hide all views
+            document.querySelectorAll('.group-view').forEach(view => {
+                view.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected view
+            document.getElementById(viewName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Export attendance report
+        function exportAttendance() {
+            const today = new Date().toLocaleDateString();
+            const time = new Date().toLocaleTimeString();
+            
+            let report = `IRTC Somare Institute - Attendance Report\n`;
+            report += `Diploma in Public Administration\n`;
+            report += `Date: ${today} | Time: ${time}\n`;
+            report += `===============================================\n\n`;
+
+            Object.keys(students).forEach(group => {
+                report += `GROUP ${group.toUpperCase()}\n`;
+                report += `${'='.repeat(group.length + 6)}\n`;
+                
+                students[group].forEach(name => {
+                    const status = attendance[name] === true ? 'PRESENT' : 
+                                 attendance[name] === false ? 'ABSENT' : 'NOT MARKED';
+                    const times = clockTimes[name];
+                    
+                    report += `${name}: ${status}`;
+                    if (times.clockIn) {
+                        report += ` | Clock In: ${times.clockIn}`;
+                    }
+                    if (times.clockOut) {
+                        report += ` | Clock Out: ${times.clockOut}`;
+                    }
+                    report += `\n`;
+                });
+                report += `\n`;
+            });
+
+            // Calculate totals
+            const totalStudents = Object.values(students).flat().length;
+            const presentCount = Object.values(attendance).filter(status => status === true).length;
+            const absentCount = Object.values(attendance).filter(status => status === false).length;
+            const attendanceRate = Math.round((presentCount / totalStudents) * 100);
+
+            report += `SUMMARY\n`;
+            report += `=======\n`;
+            report += `Total Students: ${totalStudents}\n`;
+            report += `Present: ${presentCount}\n`;
+            report += `Absent: ${absentCount}\n`;
+            report += `Attendance Rate: ${attendanceRate}%\n`;
+
+            // Create and download file
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `IRTC_Attendance_${today.replace(/\//g, '-')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize the system
+        initializeAttendance();
+        updateDisplay();
+    </script>
+</body>
+</html>
